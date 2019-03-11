@@ -1,8 +1,7 @@
 import sys
 
-from OpenGL.GL import glBegin, glEnd, GL_POLYGON, glVertex2d, \
-    glColor3f
-from OpenGL.GLUT import glutLeaveMainLoop
+from OpenGL.GL import (glBegin, glEnd, GL_POLYGON, glVertex2d,
+                       glColor3f)
 
 from base import WindowABC, rgb_to_f
 
@@ -28,6 +27,7 @@ class SquareWindow(WindowABC):
         dy = size_y / 2
 
         glColor3f(*rgb_to_f(0, 122, 255))
+
         glBegin(GL_POLYGON)
 
         glVertex2d(self._x + dx, self._y + dy)
