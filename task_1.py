@@ -1,5 +1,8 @@
+import sys
+
 from OpenGL.GL import glBegin, glEnd, GL_POLYGON, glVertex2d, \
     glColor3f
+from OpenGL.GLUT import glutLeaveMainLoop
 
 from base import WindowABC, rgb_to_f
 
@@ -33,6 +36,11 @@ class SquareWindow(WindowABC):
         glVertex2d(self._x - dx, self._y + dy)
 
         glEnd()
+
+    def handle_key(self, key, x, y):
+        super().handle_key(key, x, y)
+        if ord(key) == 27:
+            sys.exit(0)
 
 
 def main():
