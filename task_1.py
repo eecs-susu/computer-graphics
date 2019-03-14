@@ -3,10 +3,8 @@ import sys
 from OpenGL.GL import (glBegin, glEnd, GL_POLYGON, glVertex2d,
                        glColor3f)
 
+import color
 from base import WindowABC, rgb_to_f
-
-BACKGROUND_COLOR = (250, 250, 250)
-ACCENT_COLOR = (0, 122, 255)
 
 
 class SquareWindow(WindowABC):
@@ -17,23 +15,15 @@ class SquareWindow(WindowABC):
         self._size = size
 
     def draw(self):
-        self.fill_color(*BACKGROUND_COLOR, 1)
-        self.clear_color_buffer()
-
-        ratio = self.width / self.height
-        size_y = self._size * ratio
-
-        dx = self._size / 2
-        dy = size_y / 2
-
-        glColor3f(*rgb_to_f(0, 122, 255))
+        glColor3f(*rgb_to_f(*color.Blue))
 
         glBegin(GL_POLYGON)
 
-        glVertex2d(self._x + dx, self._y + dy)
-        glVertex2d(self._x + dx, self._y - dy)
-        glVertex2d(self._x - dx, self._y - dy)
-        glVertex2d(self._x - dx, self._y + dy)
+        size = self._size * self.scale / 2
+        glVertex2d(self._x + size, self._y + size)
+        glVertex2d(self._x + size, self._y - size)
+        glVertex2d(self._x - size, self._y - size)
+        glVertex2d(self._x - size, self._y + size)
 
         glEnd()
 
@@ -44,7 +34,7 @@ class SquareWindow(WindowABC):
 
 
 def main():
-    window = SquareWindow(size=0.5)
+    window = SquareWindow(size=400)
     window.show()
 
 
