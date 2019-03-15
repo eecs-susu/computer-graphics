@@ -6,7 +6,7 @@ from OpenGL.GL import (glClearColor, glClear, GL_COLOR_BUFFER_BIT, glEnable, GL_
 from OpenGL.GLUT import (glutInit, GLUT_RGB, glutInitDisplayMode, glutInitWindowSize, glutCreateWindow,
                          glutInitWindowPosition, glutGet, GLUT_SCREEN_WIDTH, GLUT_SCREEN_HEIGHT, glutMainLoop,
                          GLUT_WINDOW_WIDTH, GLUT_WINDOW_HEIGHT, glutKeyboardFunc, glutDisplayFunc, GLUT_DOUBLE,
-                         glutSwapBuffers, glutPostRedisplay, glutIdleFunc, glutMouseFunc, glutSpecialFunc, GLUT_DEPTH,
+                         glutSwapBuffers, glutIdleFunc, glutMouseFunc, glutSpecialFunc, GLUT_DEPTH,
                          glutReshapeFunc)
 
 import color
@@ -25,7 +25,7 @@ class WindowABC(ABC):
 
         glutKeyboardFunc(self.handle_key)
         glutDisplayFunc(self._draw)
-        glutIdleFunc(self._update)
+        glutIdleFunc(self.handle_idle)
         glutMouseFunc(self.handle_mouse)
         glutSpecialFunc(self.handle_special_key)
         glutReshapeFunc(self.handle_reshape)
@@ -57,17 +57,13 @@ class WindowABC(ABC):
     def clear_depth_buffer(cls):
         glClear(GL_DEPTH_BUFFER_BIT)
 
-    def update(self):
+    def handle_idle(self):
         pass
 
-    def _update(self):
-        self.update()
-        glutPostRedisplay()
-
     def _draw(self):
+        self.fill_color(*color.Smoke, 1.)
         self.clear_color_buffer()
         self.clear_depth_buffer()
-        self.fill_color(*color.Smoke, 1.)
         self.draw()
         glutSwapBuffers()
 

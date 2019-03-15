@@ -126,6 +126,7 @@ class SquareWindow(WindowABC):
             self._rotate_x += self._rot_grad
         elif key == GLUT_KEY_DOWN:
             self._rotate_x -= self._rot_grad
+        glutPostRedisplay()
 
 
 def main():

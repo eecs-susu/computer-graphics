@@ -4,7 +4,8 @@ from math import cos, radians, sin
 import numpy as np
 from OpenGL.GL import (glBegin, glEnd, GL_POLYGON, glVertex2d,
                        glColor3f, glPushMatrix, glPopMatrix, glTranslatef, glRotatef)
-from OpenGL.GLUT import GLUT_LEFT_BUTTON, GLUT_RIGHT_BUTTON, GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN
+from OpenGL.GLUT import GLUT_LEFT_BUTTON, GLUT_RIGHT_BUTTON, GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, \
+    glutPostRedisplay
 
 import color
 from base import WindowABC, rgb_to_f
@@ -29,9 +30,10 @@ class RotatedSquareWindow(WindowABC):
         self._should_rotate = False
         self._step = step
 
-    def update(self):
+    def handle_idle(self):
         if self._should_rotate:
             self._angle -= 1
+            glutPostRedisplay()
 
     def draw(self):
         self._draw_square()
@@ -53,7 +55,7 @@ class RotatedSquareWindow(WindowABC):
         glPushMatrix()
         glColor3f(*rgb_to_f(*color.Blue))
         glTranslatef(self._square_x, self._square_y, 0)
-        glRotatef(self._angle, 0, 0, -1.)
+        glRotatef(self._angle, 0, 0, 1.)
         glBegin(GL_POLYGON)
         size = self._square_size / 2
         square_vertices = [
@@ -82,6 +84,7 @@ class RotatedSquareWindow(WindowABC):
             self._circle_pos[0] += self._step
         elif key == GLUT_KEY_DOWN:
             self._circle_pos[1] -= self._step
+        glutPostRedisplay()
 
     def handle_mouse(self, button, state, x, y):
         super().handle_mouse(button, state, x, y)
