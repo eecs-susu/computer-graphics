@@ -40,7 +40,7 @@ class Settings(object):
 
     light_intensity = 0.2
 
-    projection_enabled = True
+    projection_enabled = False
 
     projection_light_diffuse = [1.0, 1.0, 1.0]
     projection_light_position = [0.0, 0.0, -1.0, 1.0]
@@ -54,14 +54,14 @@ class Settings(object):
     point_light_linear_attenuation = 0.2
     point_light_quadratic_attenuation = 0.2
 
-    sphere_material = [1.0, 0.0, 0.0, 1.0]
+    sphere_material = [*BLUE_COLOR.to_float(), 1.0]
     sphere_radius = 0.2
     sphere_detailing = 500
 
-    wall_material = [0.4, 0.7, 0.2, 1.0]
+    wall_material = [*SMOKE_COLOR.to_float(), 1.0]
     wall_z = 0.8
     wall_size = 2
-    wall_step = 0.005
+    wall_detailing = 20
 
     @property
     def light_ambient(self):
@@ -70,6 +70,10 @@ class Settings(object):
     @property
     def sphere_solid_parameters(self):
         return [self.sphere_radius, self.sphere_detailing, self.sphere_detailing]
+
+    @property
+    def wall_step(self):
+        return 1 / self.wall_detailing
 
 
 settings = Settings()
@@ -103,11 +107,18 @@ def display_callback():
         gl.light(gl.Capability.LIGHT1, gl.LightParameter.SPOT_CUTOFF, settings.projection_light_spot_cutoff)
         gl.light(gl.Capability.LIGHT1, gl.LightParameter.SPOT_DIRECTION, settings.projection_light_spot_direction)
         gl.light(gl.Capability.LIGHT1, gl.LightParameter.SPOT_EXPONENT, settings.projection_light_spot_exponent)
+
+        gl.light(gl.Capability.LIGHT1, gl.LightParameter.CONSTANT_ATTENUATION,
+                 settings.point_light_constant_attenuation)
+        gl.light(gl.Capability.LIGHT1, gl.LightParameter.LINEAR_ATTENUATION, settings.point_light_linear_attenuation)
+        gl.light(gl.Capability.LIGHT1, gl.LightParameter.QUADRATIC_ATTENUATION,
+                 settings.point_light_quadratic_attenuation)
     else:
         gl.enable(gl.Capability.LIGHT0)
 
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.DIFFUSE, settings.point_light_diffuse)
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.POSITION, settings.point_light_position)
+
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.CONSTANT_ATTENUATION,
                  settings.point_light_constant_attenuation)
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.LINEAR_ATTENUATION, settings.point_light_linear_attenuation)
@@ -159,8 +170,24 @@ def keyboard_callback(key, x, y):
         settings.view_phi += settings.view_delta_rad
     elif key == b']':
         settings.view_phi -= settings.view_delta_rad
+    elif key == b'\'':
+        settings.view_theta += settings.view_delta_rad
+    elif key == b'\\':
+        settings.view_theta -= settings.view_delta_rad
     elif key == b' ':
         settings.projection_enabled = not settings.projection_enabled
+    elif key == b'-':
+        settings.view_radius += 0.25
+    elif key == b'=':
+        settings.view_radius -= 0.25
+    elif key == b'9':
+        settings.light_intensity -= 0.1
+    elif key == b'0':
+        settings.light_intensity += 0.1
+    elif key == b'.':
+        settings.wall_detailing = 20
+    elif key == b'/':
+        settings.wall_detailing = 140
     glut.post_redisplay()
 
 
