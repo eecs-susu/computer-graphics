@@ -13,7 +13,7 @@ import color
 
 
 class WindowABC(ABC):
-    def __init__(self, title, width=1024, height=768):
+    def __init__(self, title, width=1024, height=768, background_color=color.Smoke):
         self.base_width = width
         self.base_height = height
 
@@ -31,6 +31,9 @@ class WindowABC(ABC):
         glutReshapeFunc(self.handle_reshape)
 
         glEnable(GL_DEPTH_TEST)
+
+        if background_color is not None:
+            self.fill_color(*color.Smoke, 1.)
 
     def handle_reshape(self, width, height):
         glLoadIdentity()
@@ -61,7 +64,6 @@ class WindowABC(ABC):
         pass
 
     def _draw(self):
-        self.fill_color(*color.Smoke, 1.)
         self.clear_color_buffer()
         self.clear_depth_buffer()
         self.draw()
