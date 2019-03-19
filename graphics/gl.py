@@ -14,7 +14,10 @@ from OpenGL.GL import (glClearColor, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, G
                        glMaterialf, glBlendFunc, GL_ONE, GL_SRC_ALPHA, GL_NORMALIZE, glOrtho, GL_MAP1_VERTEX_3,
                        GL_LINE_STRIP, GL_POINTS, GL_TRIANGLES, GL_COLOR_MATERIAL, GL_LINES, glGenLists,
                        glPushMatrix, glPopMatrix, GL_COMPILE, glNewList, glEndList, glCallList, glTranslatef, glRotatef,
-                       glScalef, glColor3f, GL_LINE_SMOOTH, GL_FOG)
+                       glScalef, glColor3f, GL_LINE_SMOOTH, GL_FOG, GL_FOG_DENSITY, glFogf, GL_FOG_START, GL_FOG_END,
+                       glFogi, GL_EXP2, GL_FOG_MODE, glFogfv, GL_FOG_COLOR, GL_FOG_HINT, GL_NICEST, glHint,
+                       GL_MULTISAMPLE)
+from OpenGL.raw.GL.ARB.multisample import GL_MULTISAMPLE_ARB
 
 
 @attr.s(slots=True, frozen=True)
@@ -57,6 +60,8 @@ class Gl(object):
         COLOR_MATERIAL = GL_COLOR_MATERIAL
         LINE_SMOOTH = GL_LINE_SMOOTH
         FOG = GL_FOG
+        MULTISAMPLE = GL_MULTISAMPLE
+        MULTISAMPLE_ARB = GL_MULTISAMPLE_ARB
 
     class LightModel(Enum):
         LIGHT_MODEL_AMBIENT = GL_LIGHT_MODEL_AMBIENT
@@ -111,6 +116,18 @@ class Gl(object):
 
     class ListMode(Enum):
         COMPILE = GL_COMPILE
+
+    class FogParam(Enum):
+        FOG_DENSITY = GL_FOG_DENSITY
+        FOG_START = GL_FOG_START
+        FOG_END = GL_FOG_END
+        FOG_MODE = GL_FOG_MODE
+        FOG_COLOR = GL_FOG_COLOR
+        FOG_HINT = GL_FOG_HINT
+        NICEST = GL_NICEST
+
+    class FogMode(Enum):
+        EXP2 = GL_EXP2
 
     @classmethod
     def clear_color(cls, color: GlColor, alpha=1.0):
@@ -231,3 +248,18 @@ class Gl(object):
     @classmethod
     def color3(cls, color: GlColor):
         glColor3f(*color.to_float())
+
+    @classmethod
+    def fog(cls, param: FogParam, value):
+        if isinstance(value, Iterable):
+            glFogfv(param.value, value)
+        else:
+            glFogf(param.value, value)
+
+    @classmethod
+    def fog_mode(cls, param: FogParam, mode: FogMode):
+        glFogi(param.value, mode.value)
+
+    @classmethod
+    def hint(cls, name: FogParam, val: FogParam):
+        glHint(name.value, val.value)

@@ -157,6 +157,8 @@ class Settings(object):
     update_particles = True
 
     pause = True
+    fog_enabled = False
+    fog_color = [*PINK_COLOR.to_float(), 0.1]
 
     @property
     def light_ambient(self):

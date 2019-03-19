@@ -4,7 +4,7 @@ from OpenGL.GLUT import (glutInit, glutInitDisplayMode, glutInitWindowSize, glut
                          glutMainLoop, glutKeyboardFunc, glutDisplayFunc, glutIdleFunc, glutMouseFunc, glutSpecialFunc,
                          glutReshapeFunc, glutGet, glutSwapBuffers, GLUT_RGB, GLUT_DOUBLE, GLUT_DEPTH,
                          GLUT_SCREEN_WIDTH, GLUT_SCREEN_HEIGHT, GLUT_WINDOW_WIDTH, GLUT_WINDOW_HEIGHT, glutSolidSphere,
-                         glutPostRedisplay, GLUT_SINGLE)
+                         glutPostRedisplay, GLUT_SINGLE, GLUT_MULTISAMPLE)
 
 
 class Glut(object):
@@ -22,6 +22,7 @@ class Glut(object):
         DOUBLE = GLUT_DOUBLE
         DEPTH = GLUT_DEPTH
         SINGLE = GLUT_SINGLE
+        MULTISAMPLE = GLUT_MULTISAMPLE
 
     @classmethod
     def init(cls, argv):

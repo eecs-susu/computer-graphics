@@ -2,15 +2,13 @@ import sys
 from math import sin, cos, pi, sqrt
 
 import numpy as np
-from OpenGL.GL import glFogfv, glFogi, GL_FOG_COLOR, GL_FOG_MODE, GL_LINEAR, GL_FOG_START, glFogf, GL_FOG_END, GL_EXP2, \
-    GL_EXP, GL_FOG_DENSITY
+from OpenGL.GLUT import glutSetOption
 
 from graphics import (
     gl,
     glu,
-    glut,
-)
-from task_6_helper import Settings, Particle, GREEN_COLOR, PINK_COLOR
+    glut)
+from task_6_helper import Settings, Particle, PINK_COLOR
 
 INITIAL_WINDOW_SIZE = (1024, 768)
 TITLE = 'Lighting'
@@ -37,13 +35,7 @@ def display_callback():
 
     glu.look_at(x_eye, y_eye, z_eye, *settings.sphere_center)
 
-    fogColor = [*PINK_COLOR.to_float(), 0.1]
-    glFogf(GL_FOG_DENSITY, 0.5)
-    glFogfv(GL_FOG_COLOR, fogColor)
-    glFogi(GL_FOG_MODE, GL_EXP2)
-    glFogf(GL_FOG_START, -0.3)
-    glFogf(GL_FOG_END, 0.3)
-
+    draw_fog()
     draw_animation()
     draw_spiral()
 
@@ -53,6 +45,18 @@ def display_callback():
     gl.disable(gl.Capability.LIGHT1)
 
     glut.swap_buffers()
+
+
+def draw_fog():
+    if not settings.fog_enabled:
+        gl.fog(gl.FogParam.FOG_DENSITY, 0.0)
+        return
+    gl.fog(gl.FogParam.FOG_DENSITY, 0.5)
+    gl.fog(gl.FogParam.FOG_COLOR, settings.fog_color)
+    gl.fog_mode(gl.FogParam.FOG_MODE, gl.FogMode.EXP2)
+    gl.fog(gl.FogParam.FOG_START, -0.3)
+    gl.fog(gl.FogParam.FOG_END, 0.3)
+    gl.hint(gl.FogParam.FOG_HINT, gl.FogParam.NICEST)
 
 
 def draw_spiral():
@@ -191,6 +195,8 @@ def keyboard_callback(key, x, y):
         settings.pause = not settings.pause
     elif key == b'u':
         settings.update_particles = not settings.update_particles
+    elif key == b'f':
+        settings.fog_enabled = not settings.fog_enabled
     glut.post_redisplay()
 
 
@@ -208,12 +214,13 @@ def idle_callback():
 
 
 def init():
-    pass
+    print(bool(glutSetOption))
 
 
 def main():
     glut.init(sys.argv)
-    glut.init_display_mode(glut.DisplayMode.DEPTH, glut.DisplayMode.RGB, glut.DisplayMode.DOUBLE)
+    glut.init_display_mode(glut.DisplayMode.DEPTH, glut.DisplayMode.RGB, glut.DisplayMode.DOUBLE,
+                           glut.DisplayMode.MULTISAMPLE)
     glut.init_window_size(*INITIAL_WINDOW_SIZE)
     glut.init_window_position(*get_window_center(*INITIAL_WINDOW_SIZE))
     glut.create_window(TITLE)
@@ -225,15 +232,16 @@ def main():
     gl.enable(gl.Capability.LIGHTING)
     gl.enable(gl.Capability.LINE_SMOOTH)
     gl.enable(gl.Capability.FOG)
+    gl.enable(gl.Capability.MULTISAMPLE_ARB)  # AA
 
     gl.light_model(gl.LightModel.LIGHT_MODEL_TWO_SIDE, gl.Bool.TRUE)
-
-    init()
 
     glut.display_func(display_callback)
     glut.reshape_func(reshape_callback)
     glut.keyboard_func(keyboard_callback)
     glut.idle_func(idle_callback)
+
+    init()
 
     glut.main_loop()
 
