@@ -2,14 +2,15 @@ import sys
 from math import sin, cos, pi, sqrt
 
 import numpy as np
-from OpenGL.raw.GL.VERSION.GL_1_0 import glColor3d
+from OpenGL.GL import glFogfv, glFogi, GL_FOG_COLOR, GL_FOG_MODE, GL_LINEAR, GL_FOG_START, glFogf, GL_FOG_END, GL_EXP2, \
+    GL_EXP, GL_FOG_DENSITY
 
 from graphics import (
     gl,
     glu,
     glut,
 )
-from task_6_helper import Settings, Particle, GREEN_COLOR, RED_COLOR
+from task_6_helper import Settings, Particle, GREEN_COLOR, PINK_COLOR
 
 INITIAL_WINDOW_SIZE = (1024, 768)
 TITLE = 'Lighting'
@@ -26,7 +27,7 @@ def get_window_center(width=None, height=None):
 
 
 def display_callback():
-    gl.clear_color(GREEN_COLOR)
+    gl.clear_color(PINK_COLOR)
     gl.clear(gl.Buffer.COLOR_BUFFER_BIT, gl.Buffer.DEPTH_BUFFER_BIT)
     gl.load_identity()
 
@@ -36,12 +37,28 @@ def display_callback():
 
     glu.look_at(x_eye, y_eye, z_eye, *settings.sphere_center)
 
+    fogColor = [*PINK_COLOR.to_float(), 0.1]
+    glFogf(GL_FOG_DENSITY, 0.5)
+    glFogfv(GL_FOG_COLOR, fogColor)
+    glFogi(GL_FOG_MODE, GL_EXP2)
+    glFogf(GL_FOG_START, -0.3)
+    glFogf(GL_FOG_END, 0.3)
+
     draw_animation()
+    draw_spiral()
+
+    gl.flush()
+
+    gl.disable(gl.Capability.LIGHT0)
+    gl.disable(gl.Capability.LIGHT1)
+
+    glut.swap_buffers()
+
+
+def draw_spiral():
     gl.push_matrix()
     gl.rotate(settings.spiral_z_deg, 0, 0, 1)
-
     gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.spiral_material)
-
     if settings.spiral_display_list is None:
         settings.spiral_display_list = gl.gen_lists(1)
         gl.new_list(settings.spiral_display_list, gl.ListMode.COMPILE)
@@ -55,19 +72,11 @@ def display_callback():
             r = alpha + beta * theta
             x = r * cos(theta)
             y = r * sin(theta)
-            gl.vertex3(x, y, sigma * sqrt(x**2 + y**2))
+            gl.vertex3(x, y, sigma * sqrt(x ** 2 + y ** 2))
         gl.end()
         gl.end_list()
-
     gl.call_list(settings.spiral_display_list)
     gl.pop_matrix()
-
-    gl.flush()
-
-    gl.disable(gl.Capability.LIGHT0)
-    gl.disable(gl.Capability.LIGHT1)
-
-    glut.swap_buffers()
 
 
 def draw_animation():
@@ -215,6 +224,7 @@ def main():
     gl.enable(gl.Capability.DEPTH_TEST)
     gl.enable(gl.Capability.LIGHTING)
     gl.enable(gl.Capability.LINE_SMOOTH)
+    gl.enable(gl.Capability.FOG)
 
     gl.light_model(gl.LightModel.LIGHT_MODEL_TWO_SIDE, gl.Bool.TRUE)
 

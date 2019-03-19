@@ -14,7 +14,7 @@ from OpenGL.GL import (glClearColor, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, G
                        glMaterialf, glBlendFunc, GL_ONE, GL_SRC_ALPHA, GL_NORMALIZE, glOrtho, GL_MAP1_VERTEX_3,
                        GL_LINE_STRIP, GL_POINTS, GL_TRIANGLES, GL_COLOR_MATERIAL, GL_LINES, glGenLists,
                        glPushMatrix, glPopMatrix, GL_COMPILE, glNewList, glEndList, glCallList, glTranslatef, glRotatef,
-                       glScalef, glColor3f, GL_LINE_SMOOTH)
+                       glScalef, glColor3f, GL_LINE_SMOOTH, GL_FOG)
 
 
 @attr.s(slots=True, frozen=True)
@@ -56,6 +56,7 @@ class Gl(object):
         MAP1_VERTEX_3 = GL_MAP1_VERTEX_3
         COLOR_MATERIAL = GL_COLOR_MATERIAL
         LINE_SMOOTH = GL_LINE_SMOOTH
+        FOG = GL_FOG
 
     class LightModel(Enum):
         LIGHT_MODEL_AMBIENT = GL_LIGHT_MODEL_AMBIENT

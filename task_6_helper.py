@@ -113,7 +113,7 @@ class Settings(object):
 
     spiral_z_deg = 0
     spiral_z_delta = 2
-    spiral_material = [*RED_COLOR.to_float(), 1.0]
+    spiral_material = [*GREEN_COLOR.to_float(), 1.0]
     spiral_display_list = None
 
     sphere_center = [0, 0, 0]
