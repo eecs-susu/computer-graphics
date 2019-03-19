@@ -1,5 +1,5 @@
 import sys
-from math import sin, cos, pi, radians
+from math import sin, cos
 
 import numpy as np
 
@@ -7,76 +7,11 @@ from graphics import (
     gl,
     glu,
     glut,
-    GlColor,
 )
+from task_6_helper import Settings, Particle
 
 INITIAL_WINDOW_SIZE = (1024, 768)
 TITLE = 'Lighting'
-
-RED_COLOR = GlColor(255, 59, 48)
-ORANGE_COLOR = GlColor(255, 149, 0)
-YELLOW_COLOR = GlColor(255, 204, 0)
-GREEN_COLOR = GlColor(76, 217, 100)
-TEAL_BLUE_COLOR = GlColor(90, 200, 250)
-BLUE_COLOR = GlColor(0, 122, 255)
-PURPLE_COLOR = GlColor(88, 86, 214)
-PINK_COLOR = GlColor(255, 45, 85)
-WHITE_COLOR = GlColor(255, 255, 255)
-SMOKE_COLOR = GlColor(250, 250, 250)
-
-
-class Settings(object):
-    field_of_view_y = 60  # degrees
-
-    z_near = 0.0001
-    z_far = 100
-
-    view_radius = 3.0
-    view_theta = - 3 * pi / 2
-    view_phi = - pi / 2
-    view_delta_rad = radians(5)
-
-    sphere_center = [0, 0, 0]
-
-    light_intensity = 0.2
-
-    projection_enabled = False
-
-    projection_light_diffuse = [1.0, 1.0, 1.0]
-    projection_light_position = [0.0, 0.0, -1.0, 1.0]
-    projection_light_spot_cutoff = 15.0
-    projection_light_spot_direction = [0.0, 0.0, 1.0]
-    projection_light_spot_exponent = 30.0
-
-    point_light_diffuse = [1.0, 1.0, 1.0]
-    point_light_position = [0.0, 0.0, -1.0, 1]
-    point_light_constant_attenuation = 0.0
-    point_light_linear_attenuation = 0.2
-    point_light_quadratic_attenuation = 0.2
-
-    sphere_material = [*BLUE_COLOR.to_float(), 1.0]
-    sphere_radius = 0.2
-    sphere_detailing = 500
-
-    wall_material = [*SMOKE_COLOR.to_float(), 1.0]
-    wall_z = 0.8
-    wall_size = 2
-    wall_detailing = 140
-
-    wall_display_list = None
-
-    @property
-    def light_ambient(self):
-        return [self.light_intensity, self.light_intensity, self.light_intensity, 1]
-
-    @property
-    def sphere_solid_parameters(self):
-        return [self.sphere_radius, self.sphere_detailing, self.sphere_detailing]
-
-    @property
-    def wall_step(self):
-        return 1 / self.wall_detailing
-
 
 settings = Settings()
 
@@ -127,20 +62,20 @@ def display_callback():
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.QUADRATIC_ATTENUATION,
                  settings.point_light_quadratic_attenuation)
 
-    gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
-
-    glut.solid_sphere(*settings.sphere_solid_parameters)
+    if settings.sphere_radius >= settings.sphere_min_radius:
+        gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
+        glut.solid_sphere(*settings.sphere_solid_parameters)
 
     gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.wall_material)
+
+    min_edge = -settings.wall_size / 2
+    max_edge = -min_edge
 
     if settings.wall_display_list is None:
         settings.wall_display_list = gl.gen_lists(1)
         gl.new_list(settings.wall_display_list, gl.ListMode.COMPILE)
 
         gl.begin(gl.BeginMode.QUADS)
-
-        min_edge = -settings.wall_size / 2
-        max_edge = -min_edge
 
         for wall_x in np.arange(min_edge, max_edge, settings.wall_step):
             for wall_y in np.arange(min_edge, max_edge, settings.wall_step):
@@ -153,7 +88,26 @@ def display_callback():
 
         gl.end_list()
 
+    gl.begin(gl.BeginMode.QUADS)
+    gl.vertex3(min_edge, max_edge, -settings.wall_z)
+    gl.vertex3(min_edge, max_edge, settings.wall_z)
+    gl.vertex3(min_edge, min_edge, settings.wall_z)
+    gl.vertex3(min_edge, min_edge, -settings.wall_z)
+    gl.end()
+
+    def collision(particle: Particle):
+        x, y, z = particle.position
+        if z > settings.wall_z and (min_edge <= x <= max_edge) and (min_edge <= y <= max_edge):
+            particle.position[2] = settings.wall_z
+            particle.velocity[2] *= -1
+        elif x < min_edge and (min_edge <= y <= max_edge) and (-settings.wall_z <= z <= settings.wall_z):
+            particle.position[0] = min_edge
+            particle.velocity[0] *= -1
+
     gl.call_list(settings.wall_display_list)
+
+    gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
+    settings.explosion.update(settings.time, collision)
 
     gl.flush()
 
@@ -197,8 +151,22 @@ def keyboard_callback(key, x, y):
     elif key == b'.':
         settings.wall_detailing = 20
     elif key == b'/':
-        settings.wall_detailing = 140
+        settings.time += settings.delta_time
     glut.post_redisplay()
+
+
+def idle_callback():
+    settings.time += settings.delta_time
+
+    settings.sphere_radius -= settings.sphere_radius_delta
+    if settings.sphere_radius < settings.sphere_min_radius:
+        settings.explosion.explode(settings.time)
+
+    glut.post_redisplay()
+
+
+def init():
+    pass
 
 
 def main():
@@ -210,15 +178,18 @@ def main():
 
     gl.shade_model(gl.ShadingTechnique.SMOOTH)
 
-    gl.enable(gl.Capability.CULL_FACE)
+    # gl.enable(gl.Capability.CULL_FACE)
     gl.enable(gl.Capability.DEPTH_TEST)
     gl.enable(gl.Capability.LIGHTING)
 
     gl.light_model(gl.LightModel.LIGHT_MODEL_TWO_SIDE, gl.Bool.TRUE)
 
+    init()
+
     glut.display_func(display_callback)
     glut.reshape_func(reshape_callback)
     glut.keyboard_func(keyboard_callback)
+    glut.idle_func(idle_callback)
 
     glut.main_loop()
 

@@ -11,7 +11,10 @@ from OpenGL.GL import (glClearColor, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, G
                        GL_CONSTANT_ATTENUATION, GL_QUADRATIC_ATTENUATION, GL_LINEAR_ATTENUATION, glLightf, glLightfv,
                        GL_COLOR_INDEXES, GL_AMBIENT_AND_DIFFUSE, GL_SHININESS, GL_EMISSION, GL_BACK, GL_FRONT,
                        GL_FRONT_AND_BACK, GL_QUADS, glBegin, glEnd, glFlush, glVertex3f, glLightModelfv, glMaterialfv,
-                       glMaterialf)
+                       glMaterialf, glBlendFunc, GL_ONE, GL_SRC_ALPHA, GL_NORMALIZE, glOrtho, GL_MAP1_VERTEX_3,
+                       GL_LINE_STRIP, GL_POINTS, GL_TRIANGLES, GL_COLOR_MATERIAL, GL_LINES, glGenLists,
+                       glPushMatrix, glPopMatrix, GL_COMPILE, glNewList, glEndList, glCallList, glTranslatef, glRotatef,
+                       glScalef)
 
 
 @attr.s(slots=True, frozen=True)
@@ -25,6 +28,10 @@ class GlColor(object):
 
     def to_float(self):
         return list(map(lambda x: x / 255, self.to_vector()))
+
+    @property
+    def value(self):
+        return self.to_float()
 
 
 class Gl(object):
@@ -45,6 +52,9 @@ class Gl(object):
         LIGHT0 = GL_LIGHT0
         LIGHT1 = GL_LIGHT1
         LIGHT2 = GL_LIGHT2
+        NORMALIZE = GL_NORMALIZE
+        MAP1_VERTEX_3 = GL_MAP1_VERTEX_3
+        COLOR_MATERIAL = GL_COLOR_MATERIAL
 
     class LightModel(Enum):
         LIGHT_MODEL_AMBIENT = GL_LIGHT_MODEL_AMBIENT
@@ -88,6 +98,17 @@ class Gl(object):
 
     class BeginMode(Enum):
         QUADS = GL_QUADS
+        LINE_STRIP = GL_LINE_STRIP
+        POINTS = GL_POINTS
+        TRIANGLES = GL_TRIANGLES
+        LINES = GL_LINES
+
+    class Factor(Enum):
+        SRC_ALPHA = GL_SRC_ALPHA
+        ONE = GL_ONE
+
+    class ListMode(Enum):
+        COMPILE = GL_COMPILE
 
     @classmethod
     def clear_color(cls, color: GlColor, alpha=1.0):
@@ -160,3 +181,47 @@ class Gl(object):
     @classmethod
     def vertex3(cls, x: float, y: float, z: float):
         glVertex3f(x, y, z)
+
+    @classmethod
+    def blend_func(cls, s_factor: Factor, d_factor: Factor):
+        glBlendFunc(s_factor.value, d_factor.value)
+
+    @classmethod
+    def ortho(cls, left: float, right: float, bottom: float, top: float, near: float, far: float):
+        glOrtho(left, right, bottom, top, near, far)
+
+    @classmethod
+    def gen_lists(cls, number: int):
+        return glGenLists(number)
+
+    @classmethod
+    def push_matrix(cls):
+        glPushMatrix()
+
+    @classmethod
+    def pop_matrix(cls):
+        glPopMatrix()
+
+    @classmethod
+    def new_list(cls, list_, mode: ListMode):
+        glNewList(list_, mode.value)
+
+    @classmethod
+    def end_list(cls):
+        glEndList()
+
+    @classmethod
+    def call_list(cls, list_):
+        glCallList(list_)
+
+    @classmethod
+    def translate(cls, x: float, y: float, z: float):
+        glTranslatef(x, y, z)
+
+    @classmethod
+    def rotate(cls, angle: float, x: float, y: float, z: float):
+        glRotatef(angle, x, y, z)
+
+    @classmethod
+    def scale(cls, x: float, y: float, z: float):
+        glScalef(x, y, z)
