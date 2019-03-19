@@ -100,6 +100,11 @@ class Settings(object):
     view_phi = - pi / 2
     view_delta_rad = radians(5)
 
+    spiral_z_deg = 0
+    spiral_z_delta = 2
+    spiral_material = [*RED_COLOR.to_float(), 1.0]
+    spiral_display_list = None
+
     sphere_center = [0, 0, 0]
 
     light_intensity = 0.2
@@ -137,6 +142,8 @@ class Settings(object):
 
     time = 0.
     delta_time = 0.01
+
+    pause = True
 
     @property
     def light_ambient(self):

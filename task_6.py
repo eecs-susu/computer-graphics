@@ -1,14 +1,15 @@
 import sys
-from math import sin, cos
+from math import sin, cos, pi, sqrt
 
 import numpy as np
+from OpenGL.raw.GL.VERSION.GL_1_0 import glColor3d
 
 from graphics import (
     gl,
     glu,
     glut,
 )
-from task_6_helper import Settings, Particle
+from task_6_helper import Settings, Particle, GREEN_COLOR, RED_COLOR
 
 INITIAL_WINDOW_SIZE = (1024, 768)
 TITLE = 'Lighting'
@@ -25,6 +26,7 @@ def get_window_center(width=None, height=None):
 
 
 def display_callback():
+    gl.clear_color(GREEN_COLOR)
     gl.clear(gl.Buffer.COLOR_BUFFER_BIT, gl.Buffer.DEPTH_BUFFER_BIT)
     gl.load_identity()
 
@@ -34,8 +36,42 @@ def display_callback():
 
     glu.look_at(x_eye, y_eye, z_eye, *settings.sphere_center)
 
-    gl.light_model(gl.LightModel.LIGHT_MODEL_AMBIENT, settings.light_ambient)
+    draw_animation()
+    gl.push_matrix()
+    gl.rotate(settings.spiral_z_deg, 0, 0, 1)
 
+    gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.spiral_material)
+
+    if settings.spiral_display_list is None:
+        settings.spiral_display_list = gl.gen_lists(1)
+        gl.new_list(settings.spiral_display_list, gl.ListMode.COMPILE)
+        k = 9.5
+        alpha, beta = 0.01, 0.0006
+        gamma = 1. + beta
+        sigma = -0.8
+        gl.begin(gl.BeginMode.LINE_STRIP)
+        for theta in np.linspace(0., 2 * pi * k, int(2 * k) * 360):
+            beta *= gamma
+            r = alpha + beta * theta
+            x = r * cos(theta)
+            y = r * sin(theta)
+            gl.vertex3(x, y, sigma * sqrt(x**2 + y**2))
+        gl.end()
+        gl.end_list()
+
+    gl.call_list(settings.spiral_display_list)
+    gl.pop_matrix()
+
+    gl.flush()
+
+    gl.disable(gl.Capability.LIGHT0)
+    gl.disable(gl.Capability.LIGHT1)
+
+    glut.swap_buffers()
+
+
+def draw_animation():
+    gl.light_model(gl.LightModel.LIGHT_MODEL_AMBIENT, settings.light_ambient)
     if settings.projection_enabled:
         gl.enable(gl.Capability.LIGHT1)
 
@@ -61,16 +97,12 @@ def display_callback():
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.LINEAR_ATTENUATION, settings.point_light_linear_attenuation)
         gl.light(gl.Capability.LIGHT0, gl.LightParameter.QUADRATIC_ATTENUATION,
                  settings.point_light_quadratic_attenuation)
-
     if settings.sphere_radius >= settings.sphere_min_radius:
         gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
         glut.solid_sphere(*settings.sphere_solid_parameters)
-
     gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.wall_material)
-
     min_edge = -settings.wall_size / 2
     max_edge = -min_edge
-
     if settings.wall_display_list is None:
         settings.wall_display_list = gl.gen_lists(1)
         gl.new_list(settings.wall_display_list, gl.ListMode.COMPILE)
@@ -105,16 +137,8 @@ def display_callback():
             particle.velocity[0] *= -1
 
     gl.call_list(settings.wall_display_list)
-
     gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
     settings.explosion.update(settings.time, collision)
-
-    gl.flush()
-
-    gl.disable(gl.Capability.LIGHT0)
-    gl.disable(gl.Capability.LIGHT1)
-
-    glut.swap_buffers()
 
 
 def reshape_callback(width, height):
@@ -150,13 +174,16 @@ def keyboard_callback(key, x, y):
         settings.light_intensity += 0.1
     elif key == b'.':
         settings.wall_detailing = 20
-    elif key == b'/':
-        settings.time += settings.delta_time
+    elif key == b'p':
+        settings.pause = not settings.pause
     glut.post_redisplay()
 
 
 def idle_callback():
+    if settings.pause:
+        return
     settings.time += settings.delta_time
+    settings.spiral_z_deg += settings.spiral_z_delta
 
     settings.sphere_radius -= settings.sphere_radius_delta
     if settings.sphere_radius < settings.sphere_min_radius:
@@ -181,6 +208,7 @@ def main():
     # gl.enable(gl.Capability.CULL_FACE)
     gl.enable(gl.Capability.DEPTH_TEST)
     gl.enable(gl.Capability.LIGHTING)
+    gl.enable(gl.Capability.LINE_SMOOTH)
 
     gl.light_model(gl.LightModel.LIGHT_MODEL_TWO_SIDE, gl.Bool.TRUE)
 
