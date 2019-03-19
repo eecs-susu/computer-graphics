@@ -137,8 +137,12 @@ def draw_animation():
             particle.velocity[0] *= -1
 
     gl.call_list(settings.wall_display_list)
+
     gl.material(gl.MaterialFace.FRONT_AND_BACK, gl.MaterialParameter.AMBIENT_AND_DIFFUSE, settings.sphere_material)
-    settings.explosion.update(settings.time, collision)
+    if settings.update_particles:
+        settings.explosion.update(settings.time, collision)
+    else:
+        gl.call_list(settings.explosion.display_list)
 
 
 def reshape_callback(width, height):
@@ -176,6 +180,8 @@ def keyboard_callback(key, x, y):
         settings.wall_detailing = 20
     elif key == b'p':
         settings.pause = not settings.pause
+    elif key == b'u':
+        settings.update_particles = not settings.update_particles
     glut.post_redisplay()
 
 

@@ -22,17 +22,25 @@ class Particle(object):
                  acceleration=None,
                  gravitation=None,
                  attenuation=0.0,
-                 initial_time=0.0):
+                 initial_time=0.0,
+                 life_time=None):
         self.position = position or [0., 0., 0.]
         self.velocity = velocity or [0., 0., 0.]
         self.acceleration = acceleration or [0., 0., 0.]
         self.attenuation = attenuation
         self.gravitation = gravitation or [0., 0., 0.]
         self.time = initial_time
+        self.life_time = life_time
+
+    def is_active(self):
+        return self.life_time is None or self.life_time > 0
 
     def update(self, time):
         t = time - self.time
         self.time = time
+        if self.life_time is not None:
+            self.life_time -= t
+            print(self.life_time)
 
         acceleration = [a + g for a, g in zip(self.acceleration, self.gravitation)]
         self.position = [x + v * t + 0.5 * a * t ** 2 for x, v, a in
@@ -65,6 +73,7 @@ class Explosion(object):
                 acceleration=acceleration,
                 attenuation=0.3,
                 initial_time=time,
+                life_time=None,
             ))
 
         self.display_list = gl.gen_lists(1)
@@ -78,7 +87,9 @@ class Explosion(object):
         if not self.exploded:
             return
         for i in range(self.particle_count):
-            self.particles[i].update(time)
+            if self.particles[i].is_active():
+                self.particles[i].update(time)
+
             gl.push_matrix()
             gl.translate(*self.particles[i].position)
             gl.scale(self.particle_size, self.particle_size, self.particle_size)
@@ -142,6 +153,8 @@ class Settings(object):
 
     time = 0.
     delta_time = 0.01
+
+    update_particles = True
 
     pause = True
 
