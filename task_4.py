@@ -165,6 +165,7 @@ class CubeWindow(WindowABC):
             self._rotate_x += 1
         elif key == GLUT_KEY_DOWN:
             self._rotate_x -= 1
+        glutPostRedisplay()
 
 
 def main():

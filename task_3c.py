@@ -145,7 +145,6 @@ class CubeWindow(WindowABC):
         elif key_id == 47:  # /
             self._eye_z += self._eye_step
         glutPostRedisplay()
-        print(key_id)
 
     def handle_special_key(self, key, x, y):
         super().handle_special_key(key, x, y)
@@ -157,6 +156,7 @@ class CubeWindow(WindowABC):
             self._rotate_x += 1
         elif key == GLUT_KEY_DOWN:
             self._rotate_x -= 1
+        glutPostRedisplay()
 
 
 def main():
