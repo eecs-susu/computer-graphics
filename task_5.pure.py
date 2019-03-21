@@ -195,9 +195,11 @@ def keyboard_callback(key, x, y):
     elif key == b'0':
         settings.light_intensity += 0.1
     elif key == b'.':
-        settings.wall_detailing = 20
-    elif key == b'/':
-        settings.wall_detailing = 140
+        settings.point_light_position[0] -= 0.1
+        settings.projection_light_position[0] -= 0.1
+    elif key == b',':
+        settings.point_light_position[0] += 0.1
+        settings.projection_light_position[0] += 0.1
     glut.post_redisplay()
 
 

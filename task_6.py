@@ -220,7 +220,8 @@ def init():
 def main():
     glut.init(sys.argv)
     glut.init_display_mode(glut.DisplayMode.DEPTH, glut.DisplayMode.RGB, glut.DisplayMode.DOUBLE,
-                           glut.DisplayMode.MULTISAMPLE)
+                           glut.DisplayMode.MULTISAMPLE,
+                           )
     glut.init_window_size(*INITIAL_WINDOW_SIZE)
     glut.init_window_position(*get_window_center(*INITIAL_WINDOW_SIZE))
     glut.create_window(TITLE)
@@ -248,3 +249,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Системы частиц первого порядка	4
+# Анимация объекта(-ов)	2
+# Туман	2
+# Антиалиасинг (сглаживание)	6
+# Программно-заданный объект нетривиальной формы (с дырками)	6
+# Слоистый туман	6
+# Передвижение наблюдателя в пространстве и изменение угла обзора (обработка клавишей мыши и клавиатуры)	2
+
+# 4 + 2 + 2 + 6 + 6 + 6 + 2
